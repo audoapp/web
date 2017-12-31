@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Audo</title>
+    <link rel="stylesheet" href="normalize.min.css"/>
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+                                  cursor: default;
+      }
+      html, body {
+        height: 100%;
+        width: 100%;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      header, footer {
+        display: flex;
+        min-height: 48px;
+        padding: 10px;
+        transition: min-height 0.5s ease;
+      }
+      header {
+        background: #333;
+        color: white;
+      }
+      main {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        background: #111;
+        font-family: monospace;
+      }
+      header p, input {
+        margin-right: 10px;
+      }
+      footer {
+        background: #eee;
+        color: white;
+        flex-direction: column;
+        z-index: 5;
+        box-shadow: 0px -6px 8px black;
+      }
+      footer.board {
+        min-height: 160px;
+      }
+      footer div.big {
+        display: flex;
+        width: 100%;
+        flex-grow: 1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      div.big .content {
+        color: black;
+        position: absolute;
+      }
+      footer.board div.big {
+        transition: opacity 1s ease;
+        opacity: 1;
+      }
+      footer div.thirtytwo {
+        width: 100%;
+        height: 28px;
+        display: flex;
+      }
+      .key {
+        border: 1px solid black;
+        border-right: 0;
+        background: white;
+        height: 105px;
+        width: 32px;
+      }
+      p {
+        line-height: 0;
+      }
+      button {
+        border-radius: 3px;
+        outline: 0;
+        border: 0;
+        position: relative;
+        top: 3px;
+        transition: box-shadow 0.2s ease, background 0.2s ease;
+      }
+      article {
+        flex-grow: 1;
+        display: flex;
+      }
+      aside {
+        flex-shrink: 1;
+      }
+      header button {
+        background: #666;
+        color: white;
+      }
+      span.trans {
+        opacity: 0.5;
+      }
+      button:hover {
+        background: #888;
+      }
+      .trackgrid, .trackheader {
+        display: flex;
+        color: white;
+      }
+      .number {
+        border-right: 1px solid #999;
+        height: 32px;
+      }
+      .one {
+        border-right: 1px solid #333;
+        height: auto;
+        width: 81px;
+        padding: 10px;
+      }
+      .trackgrid p.lighted {
+        color: orange;
+      }
+      .chipflex {
+        display: flex;
+      }
+      #numbers {
+        overflow: hidden;
+      }
+      .padder {
+        padding: 10px;
+        opacity: 0.5;
+        width: 40px;
+      }
+      .two {
+        height: auto;
+      }
+      .noborder {
+        border: 0;
+      }
+      main p {
+        font-size: 16px;
+      }
+      .trackheader p {
+        margin-top: 15px;
+        font-size: 24px;
+        width: 80px;
+        text-align: center;
+      }
+      div.trackheader {
+        background: #333;
+        min-height: 32px;
+        box-shadow: 0px 6px 8px black;
+      }
+      div.trackgrid {
+        flex-grow: 1;
+        display: flex;
+        overflow-y: scroll!important;
+        text-align: center;
+      }
+      .space, .padder, #grid {
+        height: 100%;
+        z-index: 10;
+      }
+      .padder2 {
+        padding-bottom: 5px;
+      }
+      #grid {
+        display: flex;
+        z-index: 10;
+      }
+      #gridone, #gridtwo {
+        display: flex;
+        z-index: 10;
+      }
+      #gridone {
+      }
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      .space {
+        flex-grow: 1;
+      }
+      footer .paragraph {
+        position: relative;
+        top: 6px;
+        left: 3px;
+        color: #ccc;
+      }
+      button:active {
+        background-color: #ccc;
+        box-shadow: inset 0px 1px 4px rgba(0,0,0,0.5);
+      }
+      .playlight {
+        color: blue;
+      }
+      .toggled {
+        background: orange!important;
+        color: white!important;
+      }
+      .tracksketch {
+        width: 1px;
+        height: 12px;
+        position: relative;
+        background: #4C8DE5;
+        transition: top 0s ease;
+      }
+      article button {
+        height: 23px;
+        margin-right: 5px;
+      }
+      .sketch {
+        width: 1px;
+        height: 12px;
+        position: relative;
+      }
+      #record {
+        display: none;
+      }
+      #gridtwo {
+        position: relative;
+        top: 8px;
+      }
+      select {
+        border: none;
+        outline: none;
+        color: white;
+        background: transparent;
+        height: 16px;
+        padding: none;
+        font-size: 12px;
+      }
+      button.enabled {
+
+      }
+    </style>
+    <script src="Tone.js"></script>
+  </head>
+  <body>
+    <header>
+      <article>
+        <p>Audo <span class="trans">Online Music Studio</span></p>
+        <input type="range" min="2" max="8" value="4" id="range"/>
+        <p>Tempo: <span id="tempo">4</span></p>
+      </article>
+      <aside>
+        <button>HSHacks 2017</button>
+      </aside>
+    </header>
+    <main>
+      <div class="trackheader">
+        <div class="padder">
+        </div>
+        <div class="space"></div>
+        <div class="sketch"></div>
+        <div class="number"><p>1</p></div>
+        <div class="number"><p>2</p></div>
+        <div class="number"><p>3</p></div>
+        <div class="number"><p>4</p></div>
+        <div class="number"><p>5</p></div>
+        <div class="number"><p>6</p></div>
+        <div class="number"><p>7</p></div>
+        <div class="number"><p>8</p></div>
+        <div class="space"></div>
+      </div>
+      <div class="trackgrid" id="greyd">
+        <div class="padder" id="padder">
+        </div>
+        <div class="space" id="numbers">
+        </div>
+        <div id="grid">
+          <div class="tracksketch" id="track"></div>
+          <div id="gridone"></div>
+          <div id="gridtwo"></div>
+        </div>
+        <div class="space"></div>
+      </div>
+    </main>
+    <footer id="keys">
+      <div class="big">
+        <div class="content">
+          <div class="chipflex" id="chipflex">
+            <div class="key"></div>
+          </div>
+        </div>
+      </div>
+      <div class="thirtytwo">
+        <article>
+          <button id="notes">Notes</button>
+          <button id="insts">Instruments</button>
+          <span class="paragraph">Octave: <span id="octave">4</span>, use + and - to change</span>
+        </article>
+        <aside>
+          <button id="release">Release Note</button>
+          <button id="keysen">Keyboard</button>
+          <button id="record">Record</button>
+          <button id="play">Play</button>
+        </aside>
+      </div>
+    </footer>
+
+    <script>
+      var keysen = document.getElementById('keysen')
+      var release = document.getElementById('release')
+      var record = document.getElementById('record')
+      var play = document.getElementById('play')
+      var range = document.getElementById('range')
+      var tempo = document.getElementById('tempo')
+      var track = document.getElementById('track')
+      var grid = document.getElementById('greyd')
+      var chipflex = document.getElementById('chipflex')
+      var octave = document.getElementById('octave')
+      var keys = document.getElementById('keys')
+      var insts = document.getElementById('insts')
+      var notes = document.getElementById('notes')
+      var trackgrid = document.getElementById('padder')
+      var element = document.createElement("DIV");
+
+      var VERTPOS = 0
+      var HORIPOS = 0
+      var OCTAVE = 4
+      var PLAYING = false
+      var RESET_SOUNDS = true
+
+      var cTime = window.performance.now()
+      var deltaTime = window.performance.now()
+      var frames = 0
+      var songTick = 0
+
+      //Make events
+      function reposition(e) {
+        var currentSelect = document.getElementsByClassName('lighted')[0]
+        currentSelect.classList.remove('lighted')
+        VERTPOS = parseInt(e.target.getAttribute("data-grid-y"))
+        HORIPOS = parseInt(e.target.getAttribute("data-grid-x"))
+        currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+        currentSelect.classList.add('lighted')
+      }
+
+      //Make grid
+      for (var j = 0; j < 32; j++) {
+        var text = document.createElement("p");
+        var js = parseInt(j)
+        if (js < 10) {
+          js = "0" + js
+        }
+        var textNode = document.createTextNode(js);
+        text.appendChild(textNode);
+        element.appendChild(text);
+      }
+
+      for (var j = 0; j < 64; j++) {
+        var text = document.createElement("div");
+        text.setAttribute("class", "key");
+        chipflex.appendChild(text);
+      }
+      element.setAttribute("class", "two");
+      trackgrid.appendChild(element);
+
+      trackgrid = document.getElementById('gridone')
+
+      track.style.top = "20px"
+      track.style.opacity = 0.5
+
+      var element = document.createElement("DIV");
+      var text = document.createElement("p");
+      text.setAttribute("class", "lighted");
+      var textNode = document.createTextNode("---");
+      text.setAttribute("data-grid-x", 0);
+      text.setAttribute("data-grid-y", 0);
+      text.addEventListener("click", reposition)
+      text.appendChild(textNode);
+      element.appendChild(text);
+      for (var j = 1; j < 32; j++) {
+        var text = document.createElement("p");
+        var textNode = document.createTextNode("---");
+        text.setAttribute("data-grid-x", 0);
+        text.setAttribute("data-grid-y", j);
+        text.addEventListener("click", reposition)
+        text.appendChild(textNode);
+        element.appendChild(text);
+      }
+      var text = document.createElement("div");
+      text.setAttribute("class", "padder2");
+      element.appendChild(text);
+      element.setAttribute("class", "one");
+      trackgrid.appendChild(element);
+
+      for (var i = 1; i < 8; i++) {
+        var element = document.createElement("DIV");
+        for (var j = 0; j < 32; j++) {
+          var text = document.createElement("p");
+          var textNode = document.createTextNode("---");
+          text.setAttribute("data-grid-x", i);
+          text.setAttribute("data-grid-y", j);
+          text.appendChild(textNode);
+          text.addEventListener("click", reposition)
+          element.appendChild(text);
+        }
+        var text = document.createElement("div");
+        text.setAttribute("class", "padder2");
+        element.appendChild(text);
+        element.setAttribute("class", "one");
+        trackgrid.appendChild(element);
+      }
+
+      trackgridtwo = document.getElementById('gridtwo')
+
+      trackgridtwo.style.display = "none"
+
+      trackgrid = document.getElementById('gridone')
+
+      insts.addEventListener('click', function() {
+          trackgridtwo.style.display = "flex"
+          trackgrid.style.display = "none"
+      })
+
+      notes.addEventListener('click', function() {
+          trackgridtwo.style.display = "none"
+          trackgrid.style.display = "flex"
+      })
+
+      for (var i = 0; i < 8; i++) {
+        var element = document.createElement("DIV");
+        for (var j = 0; j < 32; j++) {
+          var text = document.createElement("select");
+          var option = document.createElement("option");
+          var textNode = document.createTextNode("---");
+          option.setAttribute("value", "---");
+          text.appendChild(option);
+          option.appendChild(textNode);
+
+          option = document.createElement("option");
+          textNode = document.createTextNode("Piano");
+          option.setAttribute("value", "Piano");
+          text.appendChild(option);
+          option.appendChild(textNode);
+
+          option = document.createElement("option");
+          textNode = document.createTextNode("Bass");
+          option.setAttribute("value", "Bass");
+          text.appendChild(option);
+          option.appendChild(textNode);
+
+          option = document.createElement("option");
+          textNode = document.createTextNode("Synth");
+          option.setAttribute("value", "Synth");
+          text.appendChild(option);
+          option.appendChild(textNode);
+          
+          option = document.createElement("option");
+          textNode = document.createTextNode("Kick");
+          option.setAttribute("value", "Kick");
+          text.appendChild(option);
+          option.appendChild(textNode);
+          
+          option = document.createElement("option");
+          textNode = document.createTextNode("Snare");
+          option.setAttribute("value", "Snare");
+          text.appendChild(option);
+          option.appendChild(textNode);
+          
+          option = document.createElement("option");
+          textNode = document.createTextNode("Hat");
+          option.setAttribute("value", "Hat");
+          text.appendChild(option);
+          option.appendChild(textNode);
+
+          text.setAttribute("data-inst-x", i);
+          text.setAttribute("data-inst-y", j);
+          text.classList.add("instr");
+          element.appendChild(text);
+        }
+        var text = document.createElement("div");
+        text.setAttribute("class", "padder2");
+        element.appendChild(text);
+        element.setAttribute("class", "one");
+        trackgridtwo.appendChild(element);
+      }
+
+      keysen.addEventListener('click', function() {
+          //keys.classList.toggle('board');
+          alert("Use computer keys A-K for whole tones.\nUse W, E, T, Y, and U for sharps.\nUse + and - to change octave.\nUse ; to release note.\nUse backspace to delete note.")
+          keysen.blur()
+          trackgrid.focus()
+      });
+
+      var keymap = {65: "C-", 87: "C#", 83: "D-", 69: "D#", 68: "E-", 70: "F-", 84: "F#", 71: "G-", 89: "G#", 72: "A-", 85: "A#", 74: "B-"}
+
+      var currentSelect = null
+
+      function releaseNote () {
+        var currentSelect = document.getElementsByClassName('lighted')[0]
+        currentSelect.innerText = ";--"
+        currentSelect.classList.remove('lighted')
+        VERTPOS++
+        if (HORIPOS < 0) {
+          HORIPOS = 0
+        }
+        if (VERTPOS < 0 || VERTPOS > 31) {
+          VERTPOS = 0
+        }
+        currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+        currentSelect.classList.add('lighted')
+        release.blur()
+        trackgrid.focus()
+      }
+
+      release.addEventListener('click', releaseNote)
+      record.addEventListener('click', playSong)
+      play.addEventListener('click', playSong)
+
+      range.addEventListener('input', function(){
+        tempo.innerText = range.value
+      })
+
+      var samplersInitialized = 0
+      var samplers = ["","","","","","","",""]
+
+      var buff = new Tone.Buffer("piano.wav", function(){
+        for (var channel = 0; channel < 8; channel++) {
+          samplers[channel] = new Tone.Sampler(buff, function(){
+          	//repitch the sample down a half step
+            samplersInitialized++
+          }).toMaster();
+          samplers[channel].envelope = {"attack":0, "decay":1, "sustain":0.5, "release":1}
+        }
+        samplersInitialized = 8
+      })
+
+      var bass = new Tone.Buffer("bass.wav", function(){
+      })
+
+      var synth = new Tone.Buffer("synth.wav", function(){
+      })
+      
+       var kick = new Tone.Buffer("Kick.wav", function(){
+      })
+       
+        var snare = new Tone.Buffer("Snere.wav", function(){
+      })
+        
+         var hat = new Tone.Buffer("Hete.wav", function(){
+      })
+
+      instruments = {"Piano": buff, "Bass": bass, "Synth": synth, "Kick": kick, "Snare": snare, "Hat": hat}
+
+      var notemap = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
+      var sharpmap = {"-":0, "#":1}
+
+      function playSong () {
+        for (var channel = 0; channel < 8; channel++) {
+          samplers[channel].buffer = instruments["Piano"]
+        }
+        grid.scrollTop = 0
+        cTime = window.performance.now()
+        deltaTime = window.performance.now()
+        frames = 0
+        songTick = -1
+        PLAYING = !PLAYING
+        play.classList.toggle("toggled")
+        play.blur()
+        trackgrid.focus()
+      }
+
+      document.addEventListener("keydown", function(e) {
+          if (e.keyCode == 40) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.classList.remove('lighted')
+            VERTPOS++
+            if (HORIPOS < 0) {
+              HORIPOS = 0
+            }
+            if (VERTPOS < 0 || VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          if (e.keyCode == 38) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.classList.remove('lighted')
+            VERTPOS--
+            if (HORIPOS < 0) {
+              HORIPOS = 0
+            }
+            if (VERTPOS < 0) {
+              VERTPOS = 31
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          if (e.keyCode == 39) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.classList.remove('lighted')
+            HORIPOS++
+            if (HORIPOS > 7) {
+              HORIPOS = 7
+            }
+            if (VERTPOS < 0 || VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          if (e.keyCode == 37) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.classList.remove('lighted')
+            HORIPOS--
+            if (HORIPOS < 0) {
+              HORIPOS = 0
+            }
+            if (VERTPOS < 0 || VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          let keys = keymap[e.keyCode]
+          if (keys) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.innerText = keys + parseInt(OCTAVE)
+            currentSelect.classList.remove('lighted')
+            samplers[HORIPOS].triggerRelease()
+            samplers[HORIPOS].triggerAttackRelease(Math.round(parseInt(notemap[currentSelect.innerText[0]]) + parseInt(sharpmap[currentSelect.innerText[1]] + ((parseInt(currentSelect.innerText[2])-4)*12))), "16n")
+            VERTPOS++
+            if (HORIPOS < 0) {
+              HORIPOS = 0
+            }
+            if (VERTPOS < 0 || VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          if (e.keyCode == 75) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.innerText = "C-" + parseInt(OCTAVE+1)
+            currentSelect.classList.remove('lighted')
+            samplers[HORIPOS].triggerRelease()
+            samplers[HORIPOS].triggerAttackRelease(Math.round(parseInt(notemap[currentSelect.innerText[0]]) + parseInt(sharpmap[currentSelect.innerText[1]] + ((parseInt(currentSelect.innerText[2])-4)*12))), "4n")
+            VERTPOS++
+            if (HORIPOS < 0) {
+              HORIPOS = 0
+            }
+            if (VERTPOS < 0 || VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+          }
+          if (e.keyCode == 186) {
+            e.preventDefault();
+            releaseNote();
+          }
+          if (e.keyCode == 8) {
+            e.preventDefault();
+            var currentSelect = document.getElementsByClassName('lighted')[0]
+            currentSelect.classList.remove('lighted')
+            VERTPOS--
+            if (VERTPOS < 0) {
+              VERTPOS = 31
+            }
+            if (VERTPOS > 31) {
+              VERTPOS = 0
+            }
+            currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(VERTPOS) + '"][data-grid-x="' + parseInt(HORIPOS) + '"]')[0]
+            currentSelect.classList.add('lighted')
+            currentSelect.innerText = "---"
+          }
+          if (e.keyCode == 187) {
+            OCTAVE++
+            if (OCTAVE > 8) {
+              OCTAVE = 8
+            }
+            octave.innerText = parseInt(OCTAVE)
+          }
+          if (e.keyCode == 189) {
+            OCTAVE--
+            if (OCTAVE < 1) {
+              OCTAVE = 1
+            }
+            octave.innerText = parseInt(OCTAVE)
+          }
+          if (e.keyCode == 13) {
+            playSong();
+          }
+      });
+
+      //var synth = new Tone.PolySynth(4, Tone.Sampler);
+
+      setInterval(function() {
+        if (PLAYING && samplersInitialized == 8) {
+          track.style.opacity = 1
+          deltaTime = window.performance.now() - cTime
+          if (deltaTime > 1000/60) {
+            frames += 1
+            cTime = window.performance.now()
+          }
+          if (frames > range.value) {
+            songTick += 1
+            frames = 0
+            if (songTick > 31) {
+              track.style.transition = "top 0s linear"
+              songTick = 0
+              setTimeout(function() {
+                track.style.transition = null
+              }, 15);
+            }
+            track.style.top = parseInt(20 + 16*songTick) + "px"
+            if (parseInt(20 + 16*songTick) > window.innerHeight-140) {
+              grid.scrollTop = parseInt(16*songTick)
+            }
+            for (var channel = 0; channel < 8; channel++) {
+              /*currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(songTick-1) + '"][data-grid-x="' + parseInt(channel) + '"]')[0]
+              if (RESET_SOUNDS) {
+                currentSelect.classList.remove("playlight")
+              }*/
+              RESET_SOUNDS = true
+              currentSelect = document.querySelectorAll('[data-grid-y="' + parseInt(songTick) + '"][data-grid-x="' + parseInt(channel) + '"]')[0]
+              currentSelectI = document.querySelectorAll('[data-inst-y="' + parseInt(songTick) + '"][data-inst-x="' + parseInt(channel) + '"]')[0]
+              //currentSelect.classList.add("playlight")
+              if (currentSelectI.value != "---") {
+                samplers[channel].buffer = instruments[currentSelectI.value]
+              }
+              if (currentSelect.innerText[2] != "-") {
+                samplers[channel].triggerRelease()
+                samplers[channel].triggerAttack(Math.round(parseInt(notemap[currentSelect.innerText[0]]) + parseInt(sharpmap[currentSelect.innerText[1]] + ((parseInt(currentSelect.innerText[2])-4)*12))))
+              }
+              if (currentSelect.innerText[0] == ";") {
+                samplers[channel].triggerRelease()
+              }
+            }
+          }
+        } else if (RESET_SOUNDS && samplersInitialized == 8) {
+          track.style.opacity = 0.5
+          RESET_SOUNDS = false
+          for (var channel = 0; channel < 8; channel++) {
+            samplers[channel].triggerRelease()
+          }
+        }
+      }, 10)
+    </script>
+  </body>
+</html>
